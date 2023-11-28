@@ -3,17 +3,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const player = document.getElementById('player');
 
     let isDragging = false;
+    let isTimerActive = false;
 
-    player.addEventListener('mousedown', () => {
+    maze.addEventListener('mousedown', () => {
         isDragging = true;
     });
 
-    document.addEventListener('mouseup', () => {
+    document.addEventListener('mouseup', (event) => {
+        if (isDragging && !isTimerActive) {
+            resetPlayer();
+        }
         isDragging = false;
     });
 
-    document.addEventListener('mousemove', (event) => {
-        if (isDragging) {
+    maze.addEventListener('mousemove', (event) => {
+        if (isDragging && !isTimerActive) {
             movePlayer(event.clientX, event.clientY);
         }
     });
@@ -39,12 +43,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function checkCollision(x, y) {
-        const mazeRect = maze.getBoundingClientRect();
+        const walls = document.querySelectorAll('.wall');
+        const playerRect = player.getBoundingClientRect();
 
-        if (x <= 0 || y <= 0 || x >= mazeRect.width || y >= mazeRect.height) {
-            // Reset to starting position
-            player.style.left = '10px';
-            player.style.top = '10px';
+        if (
+            x < 0 ||
+            y < 0 ||
+            x + playerRect.width > maze.offsetWidth ||
+            y + playerRect.height > maze.offsetHeight
+        ) {
+            // Start a timer to freeze the mouse for 1 second
+            isTimerActive = true;
+            setTimeout(() => {
+                isTimerActive = false;
+            }, 1000);
+            resetPlayer();
+            return;
         }
+
+        // Check collision with the first image in the middle
+        const centerImageRect = document.getElementById('centerImage').getBoundingClientRect();
+        if (
+            playerRect.left < centerImageRect.right &&
+            playerRect.right > centerImageRect.left &&
+            playerRect.top < centerImageRect.bottom &&
+            playerRect.bottom > centerImageRect.top
+        ) {
+            // Open a new page with the second image and restart button
+            openNewPage();
+            return;
+        }
+
+        for (const wall of walls) {
+            const wallRect = wall.getBoundingClientRect();
+
+            if (
+                playerRect.left < wallRect.right &&
+                playerRect.right > wallRect.left &&
+                playerRect.top < wallRect.bottom &&
+                playerRect.bottom > wallRect.top
+            ) {
+                // Start a timer to freeze the mouse for 1 second
+                isTimerActive = true;
+                setTimeout(() => {
+                    isTimerActive = false;
+                }, 300);
+                resetPlayer();
+                return;
+            }
+        }
+    }
+
+    function resetPlayer() {
+        // Reset to starting position
+        player.style.left = '10px';
+        player.style.top = '10px';
+    }
+
+    function openNewPage() {
+        // Open a new page with the second image and restart button
+        window.open('new_page.html', '_blank');
     }
 });
