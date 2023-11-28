@@ -1,29 +1,22 @@
 body {
-    font-family: Arial, sans-serif;
-    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
 }
 
-#login-container, #chat-container {
-    text-align: center;
-    margin-top: 50px;
+#maze {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    border: 2px solid #000;
 }
 
-#user-container p {
-    font-weight: bold;
-}
-
-#chat-box {
-    border: 1px solid #ccc;
-    padding: 10px;
-    max-height: 300px;
-    overflow-y: scroll;
-    margin-top: 10px;
-}
-
-#message-container {
-    margin-top: 10px;
-}
-
-input, button {
-    margin-right: 5px;
+#player {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #3498db;
+    border-radius: 50%;
 }

@@ -1,71 +1,50 @@
-var socket;
-var userName;
+document.addEventListener('DOMContentLoaded', () => {
+    const maze = document.getElementById('maze');
+    const player = document.getElementById('player');
 
-function initSocket() {
-    socket = new WebSocket('ws://your-server-url'); // Replace with your WebSocket server URL
+    let isDragging = false;
 
-    socket.onopen = function(event) {
-        console.log("WebSocket connection opened:", event);
-    };
+    player.addEventListener('mousedown', () => {
+        isDragging = true;
+    });
 
-    socket.onmessage = function(event) {
-        var data = JSON.parse(event.data);
-        if (data.type === 'message') {
-            displayMessage(data);
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+
+    document.addEventListener('mousemove', (event) => {
+        if (isDragging) {
+            movePlayer(event.clientX, event.clientY);
         }
-    };
+    });
 
-    socket.onclose = function(event) {
-        console.log("WebSocket connection closed:", event);
-    };
-}
+    function movePlayer(x, y) {
+        const mazeRect = maze.getBoundingClientRect();
+        const playerRect = player.getBoundingClientRect();
 
-function login() {
-    var nameInput = document.getElementById("name");
-    var chatContainer = document.getElementById("chat-container");
+        const maxX = mazeRect.width - playerRect.width;
+        const maxY = mazeRect.height - playerRect.height;
 
-    userName = nameInput.value.trim();
+        let playerX = x - mazeRect.left - playerRect.width / 2;
+        let playerY = y - mazeRect.top - playerRect.height / 2;
 
-    if (userName !== "") {
-        // Display the chat container
-        chatContainer.style.display = "block";
+        // Ensure the player stays within the bounds of the maze
+        playerX = Math.min(Math.max(playerX, 0), maxX);
+        playerY = Math.min(Math.max(playerY, 0), maxY);
 
-        // Set the user's name
-        document.getElementById("userName").textContent = userName;
+        player.style.left = playerX + 'px';
+        player.style.top = playerY + 'px';
 
-        // Initialize WebSocket
-        initSocket();
-
-        // Hide the login container
-        document.getElementById("login-container").style.display = "none";
+        checkCollision(playerX, playerY);
     }
-}
 
-function sendMessage() {
-    var messageInput = document.getElementById("messageInput");
-    var message = messageInput.value.trim();
+    function checkCollision(x, y) {
+        const mazeRect = maze.getBoundingClientRect();
 
-    if (message !== "") {
-        var data = {
-            type: 'message',
-            user: userName,
-            message: message
-        };
-
-        // Send the message to the server
-        socket.send(JSON.stringify(data));
-
-        // Clear the message input
-        messageInput.value = '';
+        if (x <= 0 || y <= 0 || x >= mazeRect.width || y >= mazeRect.height) {
+            // Reset to starting position
+            player.style.left = '10px';
+            player.style.top = '10px';
+        }
     }
-}
-
-function displayMessage(data) {
-    var chatBox = document.getElementById("chat-box");
-    var messageElement = document.createElement("p");
-    messageElement.textContent = `${data.user}: ${data.message}`;
-    chatBox.appendChild(messageElement);
-
-    // Scroll to the bottom to show the latest message
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
+});
